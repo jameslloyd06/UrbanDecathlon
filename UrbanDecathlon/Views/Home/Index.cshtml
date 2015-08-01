@@ -1,0 +1,163 @@
+﻿@{
+    ViewBag.Title = "Home Page";
+}
+
+<div class="jumbotron">
+    <h1>Urban Decathlon</h1>
+    <span id="save">Save</span>
+    <div id="overallScore" class="lead">        
+    </div>    
+</div>
+
+<div id="eventList row">
+    <h3>Table Tennis</h3>
+    <div class="event-holder col-sm-12">
+    </div>
+
+    <h3>Badminton</h3>
+    <div class="event-holder col-sm-12">
+    </div>
+
+    <h3>Pool</h3>
+    <div class="event-holder col-sm-12">
+    </div>
+
+    <h3>Darts</h3>
+    <div class="event-holder col-sm-12">
+    </div>
+
+    <h3>1500m</h3>
+    <div class="event-holder col-sm-12">
+    </div>
+
+    <h3>Crazy Golf</h3>
+    <div class="event-holder col-sm-12">
+    </div>
+
+    <h3>Basketball</h3>
+    <div class="event-holder col-sm-12">
+    </div>
+
+    <h3>Penalties</h3>
+    <div class="event-holder  col-sm-12">
+    </div>
+
+    <h3>Shooting</h3>
+    <div class="event-holder col-sm-12">
+    </div>
+
+    <h3>Bowling</h3>
+    <div class="event-holder col-sm-12">
+    </div>
+</div>
+
+<div id="hiddenStuffs" style="display: none">
+
+    <div id="athleteBlockHolder">        
+    </div>
+
+</div>
+
+
+<script type="text/javascript">
+    $(function () {        
+
+        $('#save').click(function () {
+
+            $.ajax({
+                method: "POST",
+                url: "/Home/Save"//,
+                //data: { name: "John", location: "Boston" }
+            })
+
+        });
+
+
+        var athletes = ['JL', 'IW', 'DB', 'JH', 'JBo', 'JS', 'AC', 'SF', 'SC', 'MN', 'AF'];
+
+        var eventHolders = $('.event-holder');
+
+        $.each(athletes, function (x, atheleteInfo) {                        
+            $('<span>')
+                .addClass('athlete-block col-xs-12 col-sm-1 col-md-1')
+                .text(atheleteInfo)
+                .css('background-color', getRandomRolor())
+                .appendTo(eventHolders);
+        });
+        
+        workOutOrder();
+
+        $('.event-holder').sortable({            
+            start: function (e, ui) {
+                ui.placeholder.height(ui.item.height());
+                ui.placeholder.width(ui.item.width());
+            },
+            stop: function () {
+                workOutOrder();
+            },
+            revert: true
+        });
+
+        function workOutOrder() {
+            var athleteInfo = {};
+
+            $('.event-holder').each(function () {
+
+                var countDown = athletes.length + 1;
+
+                $(this).find('.athlete-block').each(function (x, item) {
+
+                    var block = $(this);
+
+                    if (athleteInfo[block.text()] == undefined) {
+                        athleteInfo[block.text()] = countDown;
+                    } else {
+                        athleteInfo[block.text()] += countDown;
+                    }
+
+                    if (x == 0) {
+                        countDown -= 2;
+                    } else {
+                        countDown -= 1;
+                    }
+
+                });
+            });
+
+            var sortedAthletes = sortObject(athleteInfo).reverse();
+
+            $('#overallScore').text('');
+
+            $.each(sortedAthletes, function (x, item) {                
+                $('<span>').text(item.key + ': ' + item.value).appendTo($('#overallScore'));
+            });
+        }
+
+        $('#changeColour').click(function () {
+           // alert('hello');
+        });
+
+        function sortObject(obj) {
+            var arr = [];
+            for (var prop in obj) {
+                if (obj.hasOwnProperty(prop)) {
+                    arr.push({
+                        'key': prop,
+                        'value': obj[prop]
+                    });
+                }
+            }
+            arr.sort(function (a, b) { return a.value - b.value; });            
+            return arr; // returns array
+        }
+
+        function getRandomRolor() {
+            var letters = '0123456789'.split('');
+            var color = '#';
+            for (var i = 0; i < 6; i++) {
+                color += letters[Math.floor(Math.random() * 10)];
+            }
+            return color;
+        }
+    });
+</script>

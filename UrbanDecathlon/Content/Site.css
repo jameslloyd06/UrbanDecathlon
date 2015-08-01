@@ -1,0 +1,52 @@
+﻿body {
+    padding-top: 50px;
+    padding-bottom: 20px;
+}
+
+/* Set padding to keep content from hitting the edges */
+.body-content {
+    padding-left: 15px;
+    padding-right: 15px;
+}
+
+/* Override the default bootstrap behavior where horizontal description lists 
+   will truncate terms that are too long to fit in the left column 
+*/
+.dl-horizontal dt {
+    white-space: normal;
+}
+
+/* Set width on the form input elements since they're 100% wide by default */
+input,
+select,
+textarea {
+    max-width: 280px;
+}
+
+.athlete-block {
+    background-color: maroon;
+    color: white;
+    height: 100px;
+    font-size: 23pt;    
+    text-align: center;
+    cursor: move;
+    margin-right: 8px;
+    margin-bottom: 10px;
+    line-height: 95px;
+}
+
+#overallScore span {
+    margin-right: 10px;
+}
+
+@media (max-width: 1000px) {
+    .athlete-block {
+        font-size: 14pt;
+    }
+}
+
+@media (max-width: 767px) {
+    .athlete-block {
+        font-size: 50pt;
+    }
+}
