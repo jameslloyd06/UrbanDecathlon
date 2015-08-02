@@ -6,10 +6,12 @@ namespace UrbanDecathlon.Models
 	{
         public int Id { get; set; }
 
-        public int Name { get; set; }
+        public string Name { get; set; }
 
-        public int Password { get; set; }
+        public string Password { get; set; }
 
-        public IList<Event> Events { get; set; }
+        public virtual IList<Event> Events { get; set; }
+
+        public virtual IList<Athlete> Athletes { get; set; }
 	}
 }

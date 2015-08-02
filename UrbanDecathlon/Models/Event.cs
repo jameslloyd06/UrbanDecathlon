@@ -8,6 +8,6 @@ namespace UrbanDecathlon.Models
 
         public string Name { get; set; }
         
-        public IList<Position> Positions { get; set; }
+        public virtual IList<Position> Positions { get; set; }
 	}
 }

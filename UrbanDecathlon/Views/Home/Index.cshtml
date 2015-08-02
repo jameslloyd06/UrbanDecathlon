@@ -1,93 +1,95 @@
-﻿@{
+﻿@model UrbanDecathlon.Models.Template
+
+@{
     ViewBag.Title = "Home Page";
 }
 
 <div class="jumbotron">
     <h1>Urban Decathlon</h1>
     <span id="save">Save</span>
-    <div id="overallScore" class="lead">        
-    </div>    
+    <div id="overallScore" class="lead">
+    </div>
 </div>
 
 <div id="eventList row">
-    <h3>Table Tennis</h3>
-    <div class="event-holder col-sm-12">
-    </div>
-
-    <h3>Badminton</h3>
-    <div class="event-holder col-sm-12">
-    </div>
-
-    <h3>Pool</h3>
-    <div class="event-holder col-sm-12">
-    </div>
-
-    <h3>Darts</h3>
-    <div class="event-holder col-sm-12">
-    </div>
-
-    <h3>1500m</h3>
-    <div class="event-holder col-sm-12">
-    </div>
-
-    <h3>Crazy Golf</h3>
-    <div class="event-holder col-sm-12">
-    </div>
-
-    <h3>Basketball</h3>
-    <div class="event-holder col-sm-12">
-    </div>
-
-    <h3>Penalties</h3>
-    <div class="event-holder  col-sm-12">
-    </div>
-
-    <h3>Shooting</h3>
-    <div class="event-holder col-sm-12">
-    </div>
-
-    <h3>Bowling</h3>
-    <div class="event-holder col-sm-12">
-    </div>
-</div>
-
-<div id="hiddenStuffs" style="display: none">
-
-    <div id="athleteBlockHolder">        
-    </div>
-
+    @foreach (var currentEvent in Model.Events)
+    {
+        <div class="event-details" data-id="@currentEvent.Id" data-name="@currentEvent.Name">
+            <h3>@currentEvent.Name</h3>
+            <div class="event-holder col-sm-12">
+                @foreach (var position in currentEvent.Positions)
+                {
+                    if (string.IsNullOrEmpty(position.Athlete.Colour))
+                    {
+                        <span data-athlete="@position.Athlete.Name" class="athlete-block col-xs-12 col-sm-1 col-md-1">@position.Athlete.Name</span>
+                    }
+                    else
+                    {
+                        <span data-athlete="@position.Athlete.Name" class="athlete-block col-xs-12 col-sm-1 col-md-1 color-set" style="background-color: @position.Athlete.Colour">@position.Athlete.Name</span>
+                    }
+                }
+            </div>
+        </div>        
+    }
 </div>
 
 
 <script type="text/javascript">
-    $(function () {        
+    $(function () {
 
         $('#save').click(function () {
 
+            var events = [];
+
+            $('.event-details').each(function () {
+
+                var currentEvent = $(this);
+
+                var positions = [];
+
+                $(currentEvent).find('span').each(function (i, athlete) {
+
+                    positions.push({
+                        //Id,
+                        Order: i + 1,
+                        Score: 5,
+                        Athlete: {
+                            //Id,
+                            Name: $(athlete).text()
+                        }
+                        
+
+                    });
+
+                });
+
+
+
+
+                events.push({
+                    Id: currentEvent.data('id'),
+                    Name: currentEvent.data('name'),
+                    Positions: positions
+                });
+
+            });
+
+
             $.ajax({
                 method: "POST",
-                url: "/Home/Save"//,
-                //data: { name: "John", location: "Boston" }
+                url: "Save",
+                data: { Id: "1", Name: "Hello", Password: "World", Events: events }
             })
 
         });
 
+        var athletes = $('.event-holder').first().find('.athlete-block');
 
-        var athletes = ['JL', 'IW', 'DB', 'JH', 'JBo', 'JS', 'AC', 'SF', 'SC', 'MN', 'AF'];
+        randomiseColours();
 
-        var eventHolders = $('.event-holder');
-
-        $.each(athletes, function (x, atheleteInfo) {                        
-            $('<span>')
-                .addClass('athlete-block col-xs-12 col-sm-1 col-md-1')
-                .text(atheleteInfo)
-                .css('background-color', getRandomRolor())
-                .appendTo(eventHolders);
-        });
-        
         workOutOrder();
 
-        $('.event-holder').sortable({            
+        $('.event-holder').sortable({
             start: function (e, ui) {
                 ui.placeholder.height(ui.item.height());
                 ui.placeholder.width(ui.item.width());
@@ -128,14 +130,23 @@
 
             $('#overallScore').text('');
 
-            $.each(sortedAthletes, function (x, item) {                
+            $.each(sortedAthletes, function (x, item) {
                 $('<span>').text(item.key + ': ' + item.value).appendTo($('#overallScore'));
             });
         }
 
         $('#changeColour').click(function () {
-           // alert('hello');
+            randomiseColours();
         });
+
+        function randomiseColours() {
+            athletes.not('.color-set').each(function () {
+
+                var athleteName = $(this).data('athlete');
+    
+                $('*[data-athlete="' + athleteName + '"]').css('background-color', getRandomRolor());
+            });
+        }
 
         function sortObject(obj) {
             var arr = [];
@@ -147,7 +158,7 @@
                     });
                 }
             }
-            arr.sort(function (a, b) { return a.value - b.value; });            
+            arr.sort(function (a, b) { return a.value - b.value; });
             return arr; // returns array
         }
 

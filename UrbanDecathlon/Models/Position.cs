@@ -8,6 +8,6 @@
 
         public double Score { get; set; }
 
-        public Athlete Athlete { get; set; }
+        public virtual Athlete Athlete { get; set; }
 	}
 }

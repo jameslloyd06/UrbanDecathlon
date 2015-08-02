@@ -8,6 +8,6 @@
 
         public string Colour { get; set; }
 
-        public double Score { get; set; }
+        public double? Score { get; set; }
 	}
 }
