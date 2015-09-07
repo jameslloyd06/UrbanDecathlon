@@ -1,17 +1,21 @@
 ﻿@model UrbanDecathlon.Models.Template
 
 @{
-    ViewBag.Title = "Home Page";
+    ViewBag.Title = "Results Calculator";
 }
 
 <div class="jumbotron">
-    <h1>Urban Decathlon</h1>
-    <span id="save">Save</span>
+    <h1>Urban Decathlon</h1>    
     <div id="overallScore" class="lead">
+    </div>
+    <div>
+        <span id="showAddAthleteModal">Add new athlete</span>
+        <span id="deleteAthlete">Delete</span>
+        <span id="renameAthlete">Rename</span>
     </div>
 </div>
 
-<div id="eventList row">
+<div id="eventList">
     @foreach (var currentEvent in Model.Events)
     {
         <div class="event-details" data-id="@currentEvent.Id" data-name="@currentEvent.Name">
@@ -19,25 +23,114 @@
             <div class="event-holder col-sm-12">
                 @foreach (var position in currentEvent.Positions)
                 {
-                    if (string.IsNullOrEmpty(position.Athlete.Colour))
-                    {
-                        <span data-athlete="@position.Athlete.Name" class="athlete-block col-xs-12 col-sm-1 col-md-1">@position.Athlete.Name</span>
-                    }
-                    else
-                    {
-                        <span data-athlete="@position.Athlete.Name" class="athlete-block col-xs-12 col-sm-1 col-md-1 color-set" style="background-color: @position.Athlete.Colour">@position.Athlete.Name</span>
-                    }
+                    var athlete = position.Athlete;
+
+                    <span data-athlete-id="@athlete.Id" data-athlete="@athlete.Name" data-score="0" data-colour-set="@(!string.IsNullOrEmpty(athlete.Colour))" class="athlete-block col-xs-12 col-sm-1 col-md-1" style="background-color: @athlete.Colour">@athlete.Name</span>                    
                 }
             </div>
         </div>        
     }
 </div>
 
+<div id="addAthleteModal" class="modal fade">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title">Add a new athlete</h4>
+            </div>
+            <div class="modal-body" style="height: 100px">
+                <div class="form-group">
+                    <label class="col-md-4">Athlete's initials: </label>
+                    <input id="newAthleteName" class="form-control col-md-8" type="text" maxlength="3" />
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" id="addAthlete">Save changes</button>
+            </div>
+        </div><!-- /.modal-content -->
+    </div><!-- /.modal-dialog -->
+</div><!-- /.modal -->
+
+<span id="athleteTemplate" data-athlete-id="0" data-athlete="" data-score="0" data-colour-set="false" class="athlete-block col-xs-12 col-sm-1 col-md-1"></span>   
 
 <script type="text/javascript">
     $(function () {
 
-        $('#save').click(function () {
+        // Add new athlete
+        $('#showAddAthleteModal').click(function () {
+            $('#addAthleteModal').modal('show');
+        });
+
+        $('#addAthlete').click(function () {            
+
+            var athleteTemplate = $('#athleteTemplate').clone()//.removeAttr('id');
+
+            athleteTemplate.removeAttr('id');
+
+            var initials = $('#newAthleteName').val();
+
+            athleteTemplate.text(initials).attr('data-athlete', initials).css('background-color', getRandomRolor());
+
+            athleteTemplate.appendTo($('.event-holder'));
+
+            $('#addAthleteModal').modal('hide');
+
+        });
+
+
+        // Add and remove selected state
+        $('body').click(function () {
+            if (!$(event.target).closest('#deleteAthlete, .athlete-selected').length) {
+                $('.athlete-block').removeClass('athlete-selected');
+            };            
+        });
+        
+        $('#eventList').on('click', '.athlete-block', function () {
+            $('.athlete-block').removeClass('athlete-selected');
+
+            $(this).addClass('athlete-selected');
+        });
+
+
+        // Delete Athlete
+        $('#deleteAthlete').click(function () {
+
+            var selectedAthlete = $('.athlete-selected');
+
+            if (selectedAthlete.length !== 1) return;
+
+            var athleteName = selectedAthlete.data('athlete');
+
+            $('*[data-athlete="' + athleteName + '"]').remove();
+        });
+
+        // Save template
+        $('#saveTemplate').click(function (e) {
+
+            e.preventDefault();
+
+            var athletes = $('.event-holder').first().find('.athlete-block');
+
+            var templateAthletes = [];
+
+            athletes.each(function () {
+
+                var currentScore = 0;
+
+                var athleteName = $(this).data('athlete');
+
+                $('*[data-athlete="' + athleteName + '"]').each(function () {
+                    currentScore += $(this).data().score;
+                });
+
+                templateAthletes.push({
+                    Id: $(this).data('athlete-id'),
+                    Name: athleteName,
+                    Score: currentScore
+                });                
+            });
 
             var events = [];
 
@@ -49,22 +142,16 @@
 
                 $(currentEvent).find('span').each(function (i, athlete) {
 
-                    positions.push({
-                        //Id,
+                    positions.push({                        
                         Order: i + 1,
-                        Score: 5,
+                        Score: 0, // we don't currently use this...
                         Athlete: {
-                            //Id,
+                            Id: $(athlete).data('athlete-id'),
                             Name: $(athlete).text()
-                        }
-                        
-
+                        }                        
                     });
 
                 });
-
-
-
 
                 events.push({
                     Id: currentEvent.data('id'),
@@ -74,16 +161,13 @@
 
             });
 
-
             $.ajax({
                 method: "POST",
-                url: "Save",
-                data: { Id: "1", Name: "Hello", Password: "World", Events: events }
+                url: "Home/Save",
+                data: { Id: "1", Name: "Default", Password: "LeaveMe", Events: events, Athletes: templateAthletes }
             })
 
-        });
-
-        var athletes = $('.event-holder').first().find('.athlete-block');
+        });        
 
         randomiseColours();
 
@@ -101,6 +185,9 @@
         });
 
         function workOutOrder() {
+
+            var athletes = $('.event-holder').first().find('.athlete-block');
+
             var athleteInfo = {};
 
             $('.event-holder').each(function () {
@@ -110,6 +197,8 @@
                 $(this).find('.athlete-block').each(function (x, item) {
 
                     var block = $(this);
+
+                    block.data().score += countDown;                    
 
                     if (athleteInfo[block.text()] == undefined) {
                         athleteInfo[block.text()] = countDown;
@@ -140,11 +229,17 @@
         });
 
         function randomiseColours() {
-            athletes.not('.color-set').each(function () {
 
-                var athleteName = $(this).data('athlete');
-    
-                $('*[data-athlete="' + athleteName + '"]').css('background-color', getRandomRolor());
+            var athletes = $('.event-holder').first().find('.athlete-block');
+
+            athletes.each(function () {
+
+                if ($(this).data('colour-set') != true)
+                {
+                    var athleteName = $(this).data('athlete');
+
+                    $('*[data-athlete="' + athleteName + '"]').css('background-color', getRandomRolor());
+                }                
             });
         }
 

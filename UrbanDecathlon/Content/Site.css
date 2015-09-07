@@ -23,6 +23,10 @@ textarea {
     max-width: 280px;
 }
 
+#athleteTemplate{
+    display: none;
+}
+
 .athlete-block {
     background-color: maroon;
     color: white;
@@ -33,6 +37,11 @@ textarea {
     margin-right: 8px;
     margin-bottom: 10px;
     line-height: 95px;
+}
+
+.athlete-block.athlete-selected {
+    border: 5px dotted;
+    line-height: 85px;
 }
 
 #overallScore span {

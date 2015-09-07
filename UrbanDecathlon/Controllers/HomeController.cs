@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data.Entity;
 using System.Linq;
 using System.Web;
 using System.Web.Mvc;
@@ -12,26 +13,23 @@ namespace UrbanDecathlon.Controllers
     {
         public ActionResult Index()
         {
-            Template defaultTemplate;
+            var viewModel = new Template();
 
             using (var ctx = new UrbanDecathlonContext())
             {
-                defaultTemplate = ctx.Templates.FirstOrDefault(x => x.Id == 1);
+                var defaultTemplate = ctx.Templates.FirstOrDefault(x => x.Id == 1);
+
+                viewModel = ctx.Templates.Where(x => x.Id == 1).Include(x => x.Events.Select(y => y.Positions.Select(p => p.Athlete))).FirstOrDefault();
+
                 
-                foreach (var currentEvent in defaultTemplate.Events)
+
+                foreach (var viewModelEvent in defaultTemplate.Events)
                 {
-                    for (int i = 0; i < defaultTemplate.Athletes.Count; i++)
-                    {
-                        currentEvent.Positions.Add(new Position
-                        {
-                            Athlete = defaultTemplate.Athletes[i],
-                            Order = i + 1
-                        });
-                    }                    
-                }           
+                    viewModelEvent.Positions = viewModelEvent.Positions.ToList();
+                }
             }
             
-            return View(defaultTemplate);
+            return View(viewModel);
         }
 
         public ActionResult About()
@@ -51,18 +49,57 @@ namespace UrbanDecathlon.Controllers
         public JsonResult Save(Template template)
         {
             using (var context = new UrbanDecathlonContext())
-            {
-                var templateToSave = new Template();
-
+            {                
                 if (template.Id > 0)
                 {
-                    templateToSave = context.Templates.FirstOrDefault(x => x.Id == template.Id);
+                    var existingTemplate = context.Templates.FirstOrDefault(x => x.Id == template.Id);
+
+                    // Remove existing athletes and events
+                    foreach (var athlete in existingTemplate.Athletes.ToList())
+                    {
+                        context.Athletes.Remove(athlete);
+                    }
+
+                    foreach (var existingEvent in existingTemplate.Events.ToList())
+                    {
+                        foreach (var existingPosition in existingEvent.Positions.ToList())
+                        {
+                            context.Positions.Remove(existingPosition);
+                        }
+
+                        context.Events.Remove(existingEvent);
+                    }
+
+                    context.SaveChanges();
+
+                    // Add new athletes
+                    foreach (var athlete in template.Athletes)
+                    {
+                        existingTemplate.Athletes.Add(athlete);
+                    }
+                    
+                    context.SaveChanges();
+
+                    foreach (var newEvent in template.Events)
+                    {
+                        foreach (var position in newEvent.Positions)
+                        {
+                            position.Athlete = template.Athletes.FirstOrDefault(x => x.Name == position.Athlete.Name);
+                        }
+
+                        existingTemplate.Events.Add(newEvent);
+                    }
+                    
+                    context.SaveChanges();                 
+
+                    context.Entry(existingTemplate).State = EntityState.Modified;
                 }
-
-                //context.Templates.Add(template);
-
-                //context.SaveChanges();
-
+                else
+                {
+                    context.Templates.Add(template);
+                }                
+                                
+                context.SaveChanges();
             }
 
                 
