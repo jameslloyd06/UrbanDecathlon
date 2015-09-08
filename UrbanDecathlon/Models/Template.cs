@@ -1,4 +1,5 @@
 ﻿using System.Collections.Generic;
+using System.ComponentModel.DataAnnotations.Schema;
 
 namespace UrbanDecathlon.Models
 {
@@ -13,5 +14,8 @@ namespace UrbanDecathlon.Models
         public virtual IList<Event> Events { get; set; }
 
         public virtual IList<Athlete> Athletes { get; set; }
+
+        [NotMapped]
+        public bool IsNew { get; set; }
 	}
 }

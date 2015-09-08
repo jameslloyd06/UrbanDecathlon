@@ -10,8 +10,7 @@
     </div>
     <div>
         <span id="showAddAthleteModal">Add new athlete</span>
-        <span id="deleteAthlete">Delete</span>
-        <span id="renameAthlete">Rename</span>
+        <span id="deleteAthlete">Delete</span>        
     </div>
 </div>
 
@@ -25,7 +24,7 @@
                 {
                     var athlete = position.Athlete;
 
-                    <span data-athlete-id="@athlete.Id" data-athlete="@athlete.Name" data-score="0" data-colour-set="@(!string.IsNullOrEmpty(athlete.Colour))" class="athlete-block col-xs-12 col-sm-1 col-md-1" style="background-color: @athlete.Colour">@athlete.Name</span>                    
+                    <span data-athlete-id="@athlete.Id" data-athlete="@athlete.Name" data-score="@athlete.Score" data-colour-set="@(!string.IsNullOrEmpty(athlete.Colour))" class="athlete-block col-xs-12 col-sm-1 col-md-1" style="background-color: @athlete.Colour">@athlete.Name</span>                    
                 }
             </div>
         </div>        
@@ -53,10 +52,44 @@
     </div><!-- /.modal-dialog -->
 </div><!-- /.modal -->
 
+<div id="saveNewTemplateModal" class="modal fade">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title">Save as new</h4>
+            </div>
+            <div class="modal-body" style="height: 100px">
+                <div class="form-group">   
+                    <div class="col-md-12" style="margin-bottom: 10px">
+                        <input id="newTemplateName" class="form-control" type="text" maxlength="50" placeholder="Name" />
+                    </div>                 
+                    <div class="col-md-12">
+                        <input id="newTemplatePin" class="form-control" type="text" maxlength="4" placeholder="Pin Number" />
+                    </div>                                                         
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" id="saveNewTemplate">Save changes</button>
+            </div>
+        </div><!-- /.modal-content -->
+    </div><!-- /.modal-dialog -->
+</div><!-- /.modal -->
+
 <span id="athleteTemplate" data-athlete-id="0" data-athlete="" data-score="0" data-colour-set="false" class="athlete-block col-xs-12 col-sm-1 col-md-1"></span>   
+
+@Html.HiddenFor(m => m.Name)
+@Html.HiddenFor(m => m.Password)
 
 <script type="text/javascript">
     $(function () {
+
+        if ($('#Name').val() === "Default") {
+            $('#saveTemplateLink').hide();
+        } else {
+            $('#saveTemplateLink').text('Save "' + $('#Name').val() + '"');
+        }
 
         // Add new athlete
         $('#showAddAthleteModal').click(function () {
@@ -106,11 +139,33 @@
             $('*[data-athlete="' + athleteName + '"]').remove();
         });
 
+        // Save as new template
+        $('#saveNewTemplateLink').click(function () {
+            $('#saveNewTemplateModal').modal('show');
+        });
+
+        $('#saveNewTemplate').click(function () {
+
+            var newName = $('#newTemplateName').val();
+
+            var newPin = $('#newTemplatePin').val();
+
+            // More validation is obvs required here...
+            if (!newName || newPin.length !== 4) return;
+
+            saveTemplate(newName, newPin, true);
+        });
+
         // Save template
-        $('#saveTemplate').click(function (e) {
+        $('#saveTemplateLink').click(function (e) {
 
             e.preventDefault();
 
+            saveTemplate($('#Name').val(), $('#Password').val(), false);
+        });        
+
+        function saveTemplate(name, pin, isNew)
+        {
             var athletes = $('.event-holder').first().find('.athlete-block');
 
             var templateAthletes = [];
@@ -129,7 +184,7 @@
                     Id: $(this).data('athlete-id'),
                     Name: athleteName,
                     Score: currentScore
-                });                
+                });
             });
 
             var events = [];
@@ -142,13 +197,13 @@
 
                 $(currentEvent).find('span').each(function (i, athlete) {
 
-                    positions.push({                        
+                    positions.push({
                         Order: i + 1,
                         Score: 0, // we don't currently use this...
                         Athlete: {
                             Id: $(athlete).data('athlete-id'),
                             Name: $(athlete).text()
-                        }                        
+                        }
                     });
 
                 });
@@ -164,10 +219,21 @@
             $.ajax({
                 method: "POST",
                 url: "Home/Save",
-                data: { Id: "1", Name: "Default", Password: "LeaveMe", Events: events, Athletes: templateAthletes }
-            })
+                data: { Name: name, Password: pin, Events: events, Athletes: templateAthletes, IsNew: isNew },
+                success: function (data) {                    
+                    if (isNew) {
 
-        });        
+                        $('#Name').val(name);
+
+                        $('#Password').val(pin);
+
+                        $('#saveTemplateLink').text('Save "' + name + '"');
+
+                        $('#saveNewTemplateModal').modal('hide');
+                    }
+                }
+            })
+        }
 
         randomiseColours();
 
