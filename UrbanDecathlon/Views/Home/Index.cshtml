@@ -85,11 +85,11 @@
 <script type="text/javascript">
     $(function () {
 
-        if ($('#Name').val() === "Default") {
-            $('#saveTemplateLink').hide();
-        } else {
+        //if ($('#Name').val() === "Default") {
+        //    $('#saveTemplateLink').hide();
+        //} else {
             $('#saveTemplateLink').text('Save "' + $('#Name').val() + '"');
-        }
+        //}
 
         // Add new athlete
         $('#showAddAthleteModal').click(function () {
@@ -218,7 +218,7 @@
 
             $.ajax({
                 method: "POST",
-                url: "Home/Save",
+                url: "/UrbanDecathlon/Home/Save",
                 data: { Name: name, Password: pin, Events: events, Athletes: templateAthletes, IsNew: isNew },
                 success: function (data) {                    
                     if (isNew) {

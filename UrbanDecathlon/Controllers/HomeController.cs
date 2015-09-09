@@ -33,14 +33,7 @@ namespace UrbanDecathlon.Controllers
                     }
                 }
 
-                //var template = ctx.Templates.FirstOrDefault(x => x.Id == templateId);
-
                 viewModel = ctx.Templates.Where(x => x.Id == templateId).Include(x => x.Events.Select(y => y.Positions.Select(p => p.Athlete))).FirstOrDefault();
-
-                //foreach (var viewModelEvent in template.Events)
-                //{
-                //    viewModelEvent.Positions = viewModelEvent.Positions.ToList();
-                //}
             }
 
             return View(viewModel);
