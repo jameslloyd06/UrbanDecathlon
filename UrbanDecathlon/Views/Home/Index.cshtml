@@ -4,17 +4,11 @@
     ViewBag.Title = "Results Calculator";
 }
 
-<div class="jumbotron">
-    <h1>Urban Decathlon</h1>    
-    <div id="overallScore" class="lead">
-    </div>
-    <div>
-        <span id="showAddAthleteModal">Add new athlete</span>
-        <span id="deleteAthlete">Delete</span>        
-    </div>
-</div>
+@*<div>
+        <span id="deleteAthlete">Delete</span>
+    </div>*@
 
-<div id="eventList">
+<div id="eventList" class="col-md-8">
     @foreach (var currentEvent in Model.Events)
     {
         <div class="event-details" data-id="@currentEvent.Id" data-name="@currentEvent.Name">
@@ -24,49 +18,60 @@
                 {
                     var athlete = position.Athlete;
 
-                    <span data-athlete-id="@athlete.Id" data-athlete="@athlete.Name" data-score="@athlete.Score" data-colour-set="@(!string.IsNullOrEmpty(athlete.Colour))" class="athlete-block col-xs-12 col-sm-1 col-md-1" style="background-color: @athlete.Colour">@athlete.Name</span>                    
+                    <span data-athlete-id="@athlete.Id" data-athlete="@athlete.Name" data-score="@athlete.Score" data-colour-set="@(!string.IsNullOrEmpty(athlete.Colour))" class="athlete-block col-xs-12" style="background-color: @athlete.Colour">@athlete.Name</span>
                 }
             </div>
-        </div>        
+        </div>
     }
 </div>
 
+<div id="resultPanel" class="col-md-4 hidden-sm">
+    <div class="jumbotron">
+        <h1>Results</h1>
+        <div id="overallScore" class="row"></div>
+    </div>
+</div>
+
+
+@* -- Modals -- *@
+
 <div id="addAthleteModal" class="modal fade">
-    <div class="modal-dialog">
+    <div class="modal-dialog modal-sm">
         <div class="modal-content">
             <div class="modal-header">
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
                 <h4 class="modal-title">Add a new athlete</h4>
             </div>
-            <div class="modal-body" style="height: 100px">
+            <div class="modal-body" style="height: 66px">
                 <div class="form-group">
-                    <label class="col-md-4">Athlete's initials: </label>
-                    <input id="newAthleteName" class="form-control col-md-8" type="text" maxlength="3" />
+                    <div class="col-md-12">
+                        <input id="newAthleteName" class="form-control" type="text" maxlength="3" placeholder="Athlete's initials" />
+                    </div>
                 </div>
             </div>
             <div class="modal-footer">
                 <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-                <button type="button" class="btn btn-primary" id="addAthlete">Save changes</button>
+                <button type="button" class="btn btn-primary" id="addAthlete">Add athlete</button>
             </div>
         </div><!-- /.modal-content -->
     </div><!-- /.modal-dialog -->
 </div><!-- /.modal -->
 
 <div id="saveNewTemplateModal" class="modal fade">
-    <div class="modal-dialog">
+    <div class="modal-dialog modal-sm">
         <div class="modal-content">
             <div class="modal-header">
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
                 <h4 class="modal-title">Save as new</h4>
             </div>
             <div class="modal-body" style="height: 100px">
-                <div class="form-group">   
+                <div class="form-group">
                     <div class="col-md-12" style="margin-bottom: 10px">
                         <input id="newTemplateName" class="form-control" type="text" maxlength="50" placeholder="Name" />
-                    </div>                 
+                    </div>
                     <div class="col-md-12">
                         <input id="newTemplatePin" class="form-control" type="text" maxlength="4" placeholder="Pin Number" />
-                    </div>                                                         
+                    </div>
                 </div>
             </div>
             <div class="modal-footer">
@@ -77,7 +82,49 @@
     </div><!-- /.modal-dialog -->
 </div><!-- /.modal -->
 
-<span id="athleteTemplate" data-athlete-id="0" data-athlete="" data-score="0" data-colour-set="false" class="athlete-block col-xs-12 col-sm-1 col-md-1"></span>   
+<div id="loadExistingTemplateModal" class="modal fade">
+    <div class="modal-dialog modal-sm">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title">Load existing results</h4>
+            </div>
+            <div class="modal-body" style="height: 100px">
+                <div class="form-group">
+                    <div class="col-md-12" style="margin-bottom: 10px">
+                        <input id="existingTemplateName" class="form-control" type="text" maxlength="50" placeholder="Name" />
+                    </div>
+                    <div class="col-md-12">
+                        <input id="existingTemplatePin" class="form-control" type="text" maxlength="4" placeholder="Pin Number" />
+                    </div>
+                </div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" id="loadExistingTemplate">Load results</button>
+            </div>
+        </div><!-- /.modal-content -->
+    </div><!-- /.modal-dialog -->
+</div><!-- /.modal -->
+
+<div id="resultsModal" class="modal fade">
+    <div class="modal-dialog modal-sm">
+        <div class="modal-content">
+            <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title">Results</h4>
+            </div>
+            <div class="modal-body">
+                <div id="overallScoreModal" class="row"></div>
+            </div>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+            </div>
+        </div><!-- /.modal-content -->
+    </div><!-- /.modal-dialog -->
+</div><!-- /.modal -->
+
+<span id="athleteTemplate" data-athlete-id="0" data-athlete="" data-score="0" data-colour-set="false" class="athlete-block col-xs-12 col-sm-1 col-md-1"></span>
 
 @Html.HiddenFor(m => m.Name)
 @Html.HiddenFor(m => m.Password)
@@ -85,18 +132,47 @@
 <script type="text/javascript">
     $(function () {
 
-        //if ($('#Name').val() === "Default") {
-        //    $('#saveTemplateLink').hide();
-        //} else {
+        if ($('#Name').val() === "Default") {
+            $('#saveTemplateLink').hide();
+        } else {
             $('#saveTemplateLink').text('Save "' + $('#Name').val() + '"');
-        //}
+        }
+
+
+        // Display results - for mobile
+
+        $('#displayResults').click(function () {
+
+            $('#overallScoreModal').html($('#overallScore').html());
+
+            $('#resultsModal').modal('show');
+        });
+
+
+
+        // Load existing template
+        $('#loadTemplateLink').click(function () {
+            $('#loadExistingTemplateModal').modal('show');
+        });
+
+        $('#loadExistingTemplate').click(function () {
+
+            // Add validation...
+
+            window.location.href = '/UrbanDecathlon/Home/Load?name=' + $('#existingTemplateName').val() + '&password=' + $('#existingTemplatePin').val();
+
+
+        });
+
+
+
 
         // Add new athlete
         $('#showAddAthleteModal').click(function () {
             $('#addAthleteModal').modal('show');
         });
 
-        $('#addAthlete').click(function () {            
+        $('#addAthlete').click(function () {
 
             var athleteTemplate = $('#athleteTemplate').clone()//.removeAttr('id');
 
@@ -108,8 +184,9 @@
 
             athleteTemplate.appendTo($('.event-holder'));
 
-            $('#addAthleteModal').modal('hide');
+            workOutOrder()
 
+            $('#addAthleteModal').modal('hide');
         });
 
 
@@ -117,9 +194,9 @@
         $('body').click(function () {
             if (!$(event.target).closest('#deleteAthlete, .athlete-selected').length) {
                 $('.athlete-block').removeClass('athlete-selected');
-            };            
+            };
         });
-        
+
         $('#eventList').on('click', '.athlete-block', function () {
             $('.athlete-block').removeClass('athlete-selected');
 
@@ -137,6 +214,8 @@
             var athleteName = selectedAthlete.data('athlete');
 
             $('*[data-athlete="' + athleteName + '"]').remove();
+
+            workOutOrder()
         });
 
         // Save as new template
@@ -161,11 +240,12 @@
 
             e.preventDefault();
 
-            saveTemplate($('#Name').val(), $('#Password').val(), false);
-        });        
+            $('#saveSpinner').show();
 
-        function saveTemplate(name, pin, isNew)
-        {
+            saveTemplate($('#Name').val(), $('#Password').val(), false);
+        });
+
+        function saveTemplate(name, pin, isNew) {
             var athletes = $('.event-holder').first().find('.athlete-block');
 
             var templateAthletes = [];
@@ -183,7 +263,7 @@
                 templateAthletes.push({
                     Id: $(this).data('athlete-id'),
                     Name: athleteName,
-                    Score: currentScore
+                    Score: 0
                 });
             });
 
@@ -220,7 +300,7 @@
                 method: "POST",
                 url: "/UrbanDecathlon/Home/Save",
                 data: { Name: name, Password: pin, Events: events, Athletes: templateAthletes, IsNew: isNew },
-                success: function (data) {                    
+                success: function (data) {
                     if (isNew) {
 
                         $('#Name').val(name);
@@ -231,8 +311,10 @@
 
                         $('#saveNewTemplateModal').modal('hide');
                     }
+
+                    $('#saveSpinner').hide();
                 }
-            })
+            });
         }
 
         randomiseColours();
@@ -264,7 +346,7 @@
 
                     var block = $(this);
 
-                    block.data().score += countDown;                    
+                    block.data().score += countDown;
 
                     if (athleteInfo[block.text()] == undefined) {
                         athleteInfo[block.text()] = countDown;
@@ -286,11 +368,20 @@
             $('#overallScore').text('');
 
             $.each(sortedAthletes, function (x, item) {
-                $('<span>').text(item.key + ': ' + item.value).appendTo($('#overallScore'));
+                var resultContainer = $('<div>').addClass('col-xs-12');
+
+                $('<div>').addClass('overall-position col-xs-2').text(x + 1).appendTo(resultContainer);
+                $('<div>').addClass('col-xs-4').text(item.key).appendTo(resultContainer);
+                $('<div>').addClass('overall-score col-xs-2').text(item.value).appendTo(resultContainer);
+
+                resultContainer.appendTo($('#overallScore'));
             });
         }
 
-        $('#changeColour').click(function () {
+        $('#changeColour').click(function (e) {
+
+            e.preventDefault();
+
             randomiseColours();
         });
 
@@ -300,12 +391,11 @@
 
             athletes.each(function () {
 
-                if ($(this).data('colour-set') != true)
-                {
+                if ($(this).data('colour-set') != true) {
                     var athleteName = $(this).data('athlete');
 
                     $('*[data-athlete="' + athleteName + '"]').css('background-color', getRandomRolor());
-                }                
+                }
             });
         }
 

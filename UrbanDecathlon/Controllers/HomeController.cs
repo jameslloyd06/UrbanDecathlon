@@ -10,26 +10,36 @@ using UrbanDecathlon.Models;
 namespace UrbanDecathlon.Controllers
 {
     public class HomeController : Controller
-    {
+    {        
         public ActionResult Index()
         {
             var viewModel = new Template();
 
             using (var ctx = new UrbanDecathlonContext())
             {
-                HttpCookie templateNameCookie = Request.Cookies["UDTemplateName"];
+                var loadName = TempData["loadName"] == null ? string.Empty : TempData["loadName"].ToString();
+                var loadPin = TempData["loadPin"] == null ? string.Empty : TempData["loadPin"].ToString();
 
-                HttpCookie templatePinCookie = Request.Cookies["UDTemplatePin"];
+                if (string.IsNullOrEmpty(loadName))
+                {
+                    HttpCookie templateNameCookie = Request.Cookies["UDTemplateName"];
+                    HttpCookie templatePinCookie = Request.Cookies["UDTemplatePin"];
 
+                    loadName = templateNameCookie == null ? loadName : templateNameCookie.Value;
+                    loadPin = templatePinCookie == null ? loadPin : templatePinCookie.Value;
+                }
+                
                 var templateId = 1;
 
-                if (templateNameCookie != null && templatePinCookie != null)
+                if (!string.IsNullOrEmpty(loadName) && !string.IsNullOrEmpty(loadPin))
                 {
-                    var existingTemplate = ctx.Templates.FirstOrDefault(x => x.Name == templateNameCookie.Value);
+                    var existingTemplate = ctx.Templates.FirstOrDefault(x => x.Name == loadName);
 
-                    if (existingTemplate != null && existingTemplate.Password == templatePinCookie.Value)
+                    if (existingTemplate != null && existingTemplate.Password == loadPin)
                     {
                         templateId = existingTemplate.Id;
+
+                        SetCookieDetails(loadName, loadPin);
                     }
                 }
 
@@ -131,22 +141,35 @@ namespace UrbanDecathlon.Controllers
 
                 context.Entry(existingTemplate).State = EntityState.Modified;
 
-                context.SaveChanges();
+                context.SaveChanges();                
 
-                HttpCookie templateNameCookie = new HttpCookie("UDTemplateName");                
-                templateNameCookie.Value = existingTemplate.Name;
-                templateNameCookie.Expires = DateTime.Now.AddYears(50);
-
-                HttpCookie templatePinCookie = new HttpCookie("UDTemplatePin");
-                templatePinCookie.Value = existingTemplate.Password;
-                templatePinCookie.Expires = DateTime.Now.AddYears(50);
-                
-                Response.Cookies.Add(templateNameCookie);
-                Response.Cookies.Add(templatePinCookie);
+                SetCookieDetails(existingTemplate.Name, existingTemplate.Password);
             }
 
             return Json(new { success = true });
         }
+        
+        private void SetCookieDetails(string name, string pin)
+        {
+            HttpCookie templateNameCookie = Request.Cookies["UDTemplateName"] ?? new HttpCookie("UDTemplateName");
+            HttpCookie templatePinCookie = Request.Cookies["UDTemplatePin"] ?? new HttpCookie("UDTemplatePin");
 
+            templateNameCookie.Value = name;
+            templateNameCookie.Expires = DateTime.Now.AddYears(50);
+            
+            templatePinCookie.Value = pin;
+            templatePinCookie.Expires = DateTime.Now.AddYears(50);
+
+            Response.Cookies.Add(templateNameCookie);
+            Response.Cookies.Add(templatePinCookie);
+        }
+
+        public ActionResult Load(string name, string password)
+        {
+            TempData["loadName"] = name;
+            TempData["loadPin"] = password;
+
+            return RedirectToAction("Index");
+        }
     }
 }
